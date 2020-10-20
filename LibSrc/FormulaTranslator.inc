@@ -1,28 +1,37 @@
 !ABCIncludeFile
 
 
-  OMIT('_EndOfInclude_', _gcCString_)
+  OMIT('_EndOfInclude_', _FormulaTranslator_)
 
 
-  INCLUDE('gcObject.inc'),ONCE
+  INCLUDE('FormulaTranslator.inc'),ONCE
 
-_gcCString_          EQUATE(1)
+_FormulaTranslator_ EQUATE(1)
 
-! This is a cstring garbage collector, you can use this to reserve memory inside a faction then return this value and memory will be release when this object's scope ends
-!gcCString             CLASS(gcObject), TYPE, MODULE('gcCString.CLW'), LINK('gcCString.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)
-gcCString             CLASS, TYPE, MODULE('gcCString.CLW'), LINK('gcCString.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)
+SymbolSize          EQUATE(33)
+
+SymbolStack         QUEUE, TYPE
+Symbol                CSTRING(SymbolSize)
+                    END
+
+
+FormulaTranslator   CLASS, TYPE, MODULE('FormulaTranslator.CLW'), LINK('FormulaTranslator.CLW', _ABCLinkMode_), DLL(_ABCDLLMode_)
 
 ! Data
-Value                 &CSTRING
+Input                 &SymbolStack
 
 ! Init
 Construct             PROCEDURE, PROTECTED
 Destruct              PROCEDURE, PROTECTED, VIRTUAL
 Destroy               PROCEDURE(), VIRTUAL
-_New                  PROCEDURE(LONG pSize), *gcCString, VIRTUAL !, STATIC ! Causes GPF when calling as static
 
 ! Properties
-Resize                PROCEDURE(LONG pSize), VIRTUAL
+Evaluate              PROCEDURE(STRING pFormula), REAL, VIRTUAL
+Parse                 PROCEDURE(STRING pFormula), VIRTUAL
+Parse                 PROCEDURE(SymbolStack pInput, STRING pFormula), VIRTUAL, PRIVATE
+Push                  PROCEDURE(SymbolStack pStack, STRING pSymbol), VIRTUAL
+Pop                   PROCEDURE(SymbolStack pStack), STRING, VIRTUAL
+ToString              PROCEDURE(), STRING, VIRTUAL
 
 ! Debug
 DebugOutput           PROCEDURE(STRING pMessage), VIRTUAL
